@@ -1,18 +1,21 @@
-use std::{collections::HashMap, io::Cursor};
+use std::collections::HashMap;
 
 use http::handle_http;
 use socket::handle_socket;
-use tokio::{net::{TcpListener, TcpStream}, io::{BufReader, AsyncBufReadExt, AsyncReadExt}};
+use tokio::{net::{TcpListener, TcpStream}, io::{BufReader, AsyncBufReadExt}};
 
 mod http;
 mod socket;
 
 #[tokio::main]
 async fn main() {
-    let server = TcpListener::bind("0.0.0.0:80").await.unwrap();
+    let server = TcpListener::bind("0.0.0.0:51413").await.unwrap();
 
     loop {
-        let (stream, _socket_addr) = server.accept().await.unwrap();
+        let (stream, socket_addr) = server.accept().await.unwrap();
+
+        println!("{:?}", socket_addr);
+
         tokio::spawn(async move {
             handle_connection(stream).await;
         });
@@ -24,7 +27,7 @@ async fn handle_connection(mut stream: TcpStream) {
     let mut lines = buf_reader.lines();
     let inital = lines.next_line().await.unwrap().unwrap();
 
-    println!("now");
+    //println!("now");
     
     let mut headers: HashMap<String, String> = HashMap::new();
     while let Some(line) = lines.next_line().await.unwrap() {
