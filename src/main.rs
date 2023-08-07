@@ -9,12 +9,10 @@ mod socket;
 
 #[tokio::main]
 async fn main() {
-    let server = TcpListener::bind("0.0.0.0:51413").await.unwrap();
+    let server = TcpListener::bind("0.0.0.0:80").await.unwrap();
 
     loop {
-        let (stream, socket_addr) = server.accept().await.unwrap();
-
-        println!("{:?}", socket_addr);
+        let (stream, _socket_addr) = server.accept().await.unwrap();
 
         tokio::spawn(async move {
             handle_connection(stream).await;
@@ -40,12 +38,12 @@ async fn handle_connection(mut stream: TcpStream) {
 
     if let Some(upgrade_type) = headers.get("Upgrade") {
         if upgrade_type == "websocket" {
-            println!("socket");
-
+            //println!("socket");
+            println!("> {:?}", stream.peer_addr().unwrap());
             handle_socket(&mut stream, inital, headers).await;
             return;
         }
     }
-    println!("http");
+    //println!("http");
     handle_http(&mut stream, inital, headers).await;
 }

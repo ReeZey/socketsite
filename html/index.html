@@ -1,38 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>rust go brrrrr</title>
-    <link rel="stylesheet" href="main.css">
-    <script src="main.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-  </head>
-  <body>
-    <div class="center">
-      <div style="padding:1em">
-        <p class="header">välkommen till ris hemsida</p>
-        <p>sidan är under uppbyggnad</p>
-      </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title class="title">Document</title>
+    <style>
+        body {
+            background-color: #000;
+        }
+        p {
+            color: white;
+        }
+    </style>
+    <script>
+        let socket_connected = false;
+        var socket;
+        function start_socket() {
+            socket = new WebSocket("ws://" + location.host);
 
-      <div style="padding:1em">
-        <p class="header">sociala länkar</p>
-        <div>
-          <a href="https://reez.it/youtube">youtube</a>
-          <a href="https://reez.it/twitch">twitch</a>
-          <a href="https://reez.it/twitter">twitter</a>
-          <a href="https://reez.it/tiktok">tiktok</a>
-          <a href="https://reez.it/github">github</a>
-          <a href="https://reez.it/instagram">instagram</a>
-          <a href="https://reez.it/reddit">reddit</a>
-          <a href="#" onclick="alert('ReeZey#6969')">discord</a>
-        </div>
-      </div>
+            socket.onopen = (event) => {
+                socket.send("hello");
+                socket_connected = true;
 
-      <a href="testing/">testing corner</a>
-    </div>
+                document.querySelector(".title").innerHTML = "ris - Connected";
+            };
 
-    <div class="footer">
-      <p>made with rust - <a href="https://github.com/reezey/blazing-rs">blazing-rs</a></p>
-    </div>
-  </body>
+            socket.onmessage = (message) => {
+                console.log(message.data);
+            };
+
+            /*
+            socket.onerror = (event) => {
+                console.log(event);
+            };
+            */
+
+            socket.onclose = (event) => {
+                document.querySelector(".title").innerHTML = "ris - Disconnected";
+                setTimeout(start_socket(), 5000);
+
+                if(socket_connected) {
+                    console.log("lost connection to server... retrying...");
+                    console.log(event);
+                } else {
+                    console.log("could not connect to server... retrying...");
+                }
+
+                socket_connected = false;
+            };
+        }
+
+        start_socket();
+    </script>
+</head>
+<body>
+    <p>socket server test</p>
+</body>
 </html>
