@@ -7,26 +7,39 @@
     <style>
         body {
             background-color: #000;
+            text-align: center;
         }
         p {
             color: white;
         }
     </style>
     <script>
+        const version = "0.0.13";
         let socket_connected = false;
         var socket;
+        var sticky = true;
+
         function start_socket() {
             socket = new WebSocket("ws://" + location.host);
 
             socket.onopen = (event) => {
-                socket.send("hello");
+                socket.send(version);
                 socket_connected = true;
 
                 document.querySelector(".title").innerHTML = "ris - Connected";
             };
 
             socket.onmessage = (message) => {
-                console.log(message.data);
+                if(message.data == "reload"){
+                    location.reload();
+                    return;
+                }
+
+                let textarea = document.querySelector(".logs");
+                textarea.value += message.data + "\n";
+                if(sticky) {
+                    textarea.scrollTop = textarea.scrollHeight;
+                }
             };
 
             /*
@@ -42,18 +55,42 @@
                 if(socket_connected) {
                     console.log("lost connection to server... retrying...");
                     console.log(event);
+                    socket_connected = false;
                 } else {
                     console.log("could not connect to server... retrying...");
                 }
-
-                socket_connected = false;
             };
         }
-
         start_socket();
+
+        function send() {
+            let text = document.querySelector(".input-text").value;
+            socket.send(text);
+        };
+
+        function input_send() {
+            if(event.key === 'Enter') {
+                send();
+                document.querySelector(".input-text").value = "";
+            }
+        }
+
+        window.onload = () => {
+            var textarea = document.querySelector(".logs");
+            textarea.onscroll = (scroll) => {
+                sticky = (textarea.scrollHeight - textarea.scrollTop ) < (window.innerHeight * 0.9);
+            };
+        }
     </script>
 </head>
 <body>
     <p>socket server test</p>
+    <div>
+        <textarea class="logs" style="height: 80vh; width: 80vw;"></textarea>
+        <div>
+            <input class="input-text" onkeydown="input_send()">
+            <button onclick="send()">send</button>
+        </div>
+    </div>
 </body>
 </html>
